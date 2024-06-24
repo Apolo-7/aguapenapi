@@ -17,7 +17,7 @@ $f3->config('config.ini');
 $f3->config('routes.ini');
 
 //configurar la conexion con la basede datos
-$f3->set('DB', new DB\SQL('mysql:host=' . $f3->get('database.host') . ';port=3309;dbname=' . $f3->get('database.dbname'), $f3->get('database.user'), $f3->get('database.pass')), $options = array(
+$f3->set('DB', new DB\SQL('mysql:host=' . $f3->get('database.host') . ';port=3306;dbname=' . $f3->get('database.dbname'), $f3->get('database.user'), $f3->get('database.pass')), $options = array(
     \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
     \PDO::ATTR_PERSISTENT => TRUE, 
     \PDO::MYSQL_ATTR_COMPRESS => TRUE, 
