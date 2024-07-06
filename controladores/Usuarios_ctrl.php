@@ -98,7 +98,8 @@ class Usuarios_ctrl
         $response = [
             'mensaje' => $mensaje,
             'retorno' => $retorno,
-            'usuario_id' => $usuario_id
+            'usuario_id' => $usuario_id,
+            'nombres' => $usuario->nombres,
         ];
 
         echo json_encode($response);
