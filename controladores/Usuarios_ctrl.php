@@ -192,4 +192,29 @@ class Usuarios_ctrl
 
         echo json_encode($response);
     }
+
+
+
+     // Método para verificar si la cédula existe
+     public function verificarCedula($f3)
+     {
+         $usuario = new M_Usuarios();
+         $cedula = $f3->get("POST.cedula");
+         $retorno = 0;
+         $mensaje = "La cédula no existe";
+ 
+         // Verificar si la cédula existe en la base de datos
+         $usuario->load(['cedula=?', $cedula]);
+         if ($usuario->loaded() > 0) {
+             $retorno = 1;
+             $mensaje = "La cédula es válida";
+         }
+ 
+         $response = [
+             'retorno' => $retorno,
+             'mensaje' => $mensaje,
+         ];
+ 
+         echo json_encode($response);
+     }
 }
