@@ -20,6 +20,9 @@ class Registro_ctrl
         $newId = 0;
         $retorno = 0;
 
+        // Establecer la zona horaria
+        date_default_timezone_set('America/Guayaquil');
+
         //Los campos son, id_usuario, fecha_registro, hora_registro, observacion
         $id_usuario = $f3->get("POST.id_usuario");
         $observacion = $f3->get("POST.observacion");
@@ -49,6 +52,7 @@ class Registro_ctrl
     }
 
     //Registrar detalles del registro
+    // Registrar detalles del registro
     public function registerRegistroDetalle($f3)
     {
         $registroDetalle = new M_RegistroDetalle();
@@ -56,20 +60,55 @@ class Registro_ctrl
         $mensaje = "";
         $retorno = 0;
 
-        //Los campos son, id_registro, id_producto, cantidad
+        // Los campos son, id_registro, id_producto, cantidad
         $id_registro = $f3->get("POST.id_registro");
         $id_producto = $f3->get("POST.id_producto");
         $cantidad = $f3->get("POST.cantidad");
 
-        //Insertar detalle del registro
+        // Validar si el registro existe
+        $registro = $this->M_Registro->load(['id_registro = ?', $id_registro]);
+        if (!$registro) {
+            $mensaje = "El registro no existe";
+            $response = [
+                'mensaje' => $mensaje,
+                'retorno' => $retorno
+            ];
+            echo json_encode($response);
+            return;
+        }
+
+        // Validar si el producto existe
+        $producto = $this->M_Productos->load(['id = ?', $id_producto]);
+        if (!$producto) {
+            $mensaje = "El producto no existe";
+            $response = [
+                'mensaje' => $mensaje,
+                'retorno' => $retorno
+            ];
+            echo json_encode($response);
+            return;
+        }
+
+        // Validar si hay suficiente stock del producto
+        if ($producto->stock_producto < $cantidad) {
+            $mensaje = "Stock insuficiente para el producto";
+            $response = [
+                'mensaje' => $mensaje,
+                'retorno' => $retorno
+            ];
+            echo json_encode($response);
+            return;
+        }
+
+        // Insertar detalle del registro
         $registroDetalle->id_registro = $id_registro;
         $registroDetalle->id_producto = $id_producto;
         $registroDetalle->cantidad = $cantidad;
         $registroDetalle->save();
 
         // Actualizar el stock del producto
-        $nuevoStock = $producto->get('stock_producto') - $cantidad;
-        $producto->set('stock_producto', $nuevoStock);
+        $nuevoStock = $producto->stock_producto - $cantidad;
+        $producto->stock_producto = $nuevoStock;
         $producto->save();
 
         $mensaje = "Detalle del registro creado y stock actualizado exitosamente";
@@ -83,25 +122,6 @@ class Registro_ctrl
         echo json_encode($response);
     }
 
-    //Ver registros
-    public function viewRegistros($f3)
-    {
-        $registros = new M_Registro();
-        $items = $registros->find();
-
-        // Convertir los objetos en arrays
-        $itemsArray = [];
-        foreach ($items as $item) {
-            $itemsArray[] = $item->cast();
-        }
-
-        $response = [
-            'cantidad' => count($itemsArray),
-            'data' => $itemsArray
-        ];
-
-        echo json_encode($response);
-    }
 
     //Ver detalles de registro
     public function viewRegistroDetalles($f3)
@@ -122,5 +142,39 @@ class Registro_ctrl
 
         echo json_encode($response);
     }
+
+
+
+
+    public function viewRegistroAll($f3)
+    {
+        $cadenaSql = "SELECT 
+        r.id_registro,
+        u.tx_nombre AS nombre,
+        r.fecha_registro,
+        p.nombre_producto,
+        rd.cantidad,
+        SUM(rd.cantidad) OVER (PARTITION BY r.id_registro) AS total_cantidades
+    FROM 
+        registro r
+    JOIN 
+        usuarios_trabajadores u ON r.id_usuario = u.id_usuario
+    JOIN 
+        registro_detalle rd ON r.id_registro = rd.id_registro
+    JOIN 
+        productos p ON rd.id_producto = p.id
+    ORDER BY 
+        r.id_registro, p.nombre_producto";
+
+        //echo $cadenaSql
+        $items = $f3->DB->exec($cadenaSql);
+        echo json_encode(
+            [
+                'cantidad' => count($items),
+                'data' => $items
+
+            ]
+
+        );
+    }
 }
-?>
