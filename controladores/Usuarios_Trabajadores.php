@@ -111,6 +111,7 @@ class Usuarios_Trabajadores
          'retorno' => $retorno
      ];
 
+     
      echo json_encode($response);
  }
 }
