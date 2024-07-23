@@ -218,6 +218,7 @@ class Usuarios_ctrl
              $retorno = 1;
              $mensaje = "La cédula es válida";
          }
+         
  
          $response = [
              'retorno' => $retorno,
