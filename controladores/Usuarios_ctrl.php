@@ -2,6 +2,9 @@
 <?php
 class Usuarios_ctrl
 {
+
+
+    
     public $M_Usuarios = null;
     public function __construct()
     {
