@@ -2,6 +2,9 @@
 <?php
 class Usuarios_ctrl
 {
+
+
+    
     public $M_Usuarios = null;
     public function __construct()
     {
@@ -111,8 +114,8 @@ class Usuarios_ctrl
         $usuario = new M_Usuarios();
         $mensaje = "";
         $retorno = 0;
-
-        //Los campos son, id, cedula, telefono, nombres, apellidos, correo, usuario, rol_id
+    
+        // Los campos son id, cedula, telefono, nombres, apellidos, correo, usuario, clave (opcional)
         $id = $f3->get("POST.id");
         $cedula = $f3->get("POST.cedula");
         $telefono = $f3->get("POST.telefono");
@@ -121,7 +124,8 @@ class Usuarios_ctrl
         $correo = $f3->get("POST.correo");
         $nombreUsuario = $f3->get("POST.usuario");
         $rol_id = $f3->get("POST.rol_id");
-
+        $clave = $f3->get("POST.clave"); // La clave puede ser vacía
+    
         // Verificar si la cédula ya existe en otro usuario
         $usuario->load(['cedula=? AND id!=?', $cedula, $id]);
         if ($usuario->loaded() > 0) {
@@ -139,8 +143,16 @@ class Usuarios_ctrl
                 $usuario->correo = $correo;
                 $usuario->usuario = $nombreUsuario;
                 $usuario->rol_id = $rol_id;
+    
+                // Solo actualizar la clave si se proporciona una nueva
+                if (!empty($clave)) {
+                    // Encriptar la nueva clave
+                    $claveEncriptada = password_hash($clave, PASSWORD_DEFAULT);
+                    $usuario->clave = $claveEncriptada;
+                }
+    
                 $usuario->save();
-
+    
                 $mensaje = "Usuario actualizado exitosamente";
                 $retorno = 1;
             } else {
@@ -148,15 +160,15 @@ class Usuarios_ctrl
                 $retorno = 0;
             }
         }
-
+    
         $response = [
             'mensaje' => $mensaje,
             'retorno' => $retorno
         ];
-
+    
         echo json_encode($response);
     }
-
+    
 
     public function recuperarClave($f3)
     {
@@ -209,6 +221,7 @@ class Usuarios_ctrl
              $retorno = 1;
              $mensaje = "La cédula es válida";
          }
+         
  
          $response = [
              'retorno' => $retorno,
@@ -217,4 +230,46 @@ class Usuarios_ctrl
  
          echo json_encode($response);
      }
+
+
+
+
+     public function viewDatosUsersSesion($f3)
+     {
+         $usuario = new M_Usuarios();
+         $id = $f3->get('POST.id'); // Obtener el ID desde el cuerpo de la solicitud POST
+         $mensaje = "";
+         $retorno = 0;
+         $datosUsuario = [];
+ 
+         // Verificar si el usuario existe por ID
+         $usuario->load(['id=?', $id]);
+         if ($usuario->loaded() > 0) {
+             // Usuario encontrado, obtener sus datos
+             $datosUsuario = [
+                 'id' => $usuario->id,
+                 'cedula' => $usuario->cedula,
+                 'telefono' => $usuario->telefono,
+                 'nombres' => $usuario->nombres,
+                 'apellidos' => $usuario->apellidos,
+                 'correo' => $usuario->correo,
+                 'usuario' => $usuario->usuario,
+                 'rol_id' => $usuario->rol_id
+             ];
+             $retorno = 1;
+             $mensaje = "Usuario encontrado";
+         } else {
+             $mensaje = "Usuario no encontrado";
+         }
+ 
+         $response = [
+             'retorno' => $retorno,
+             'mensaje' => $mensaje,
+             'usuario' => $datosUsuario
+         ];
+ 
+         echo json_encode($response);
+     } 
+
+ 
 }
