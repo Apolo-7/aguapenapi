@@ -10,7 +10,7 @@ class Areas_ctrl
 
 
     //verProductos
-    public function viewSeasons ($f3)
+    public function viewAreas ($f3)
     {
 
 
