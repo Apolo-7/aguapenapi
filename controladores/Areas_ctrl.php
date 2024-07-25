@@ -32,5 +32,7 @@ class Areas_ctrl
         echo json_encode($response);
     }
 
+
+    
    
 }
