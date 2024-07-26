@@ -120,4 +120,6 @@ class Registro_areas
 
 }
 
+
+
 }
